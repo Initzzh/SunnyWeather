@@ -21,6 +21,10 @@ class PlaceViewModel: ViewModel() {
 
     fun searchPlaces(query: String){
         searchLiveData.value = query
-
     }
+
+    // 对Repository的savePlace,getSavePlace, isSavedPlace进行封装
+    fun savePlace(place: Place) = Repository.savePlace(place)
+    fun getSavePlace() = Repository.getSavePlace()
+    fun isPlaceSaved() = Repository.isPlaceSaved()
 }

@@ -2,6 +2,7 @@ package com.sunnyweather.android.ui.place
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.sunnyweather.android.WeatherActivity
 import com.sunnyweather.android.databinding.FragmentPlaceBinding
 
 class PlaceFragment: Fragment() {
@@ -21,6 +23,7 @@ class PlaceFragment: Fragment() {
 
     // PlaceViewModel
 
+    // 共有的，可以通过placeFragment获取viewModel
     val viewModel by lazy { ViewModelProvider(this).get(PlaceViewModel::class.java) }
     private lateinit var placeAdapter: PlaceAdapter
 
@@ -44,13 +47,27 @@ class PlaceFragment: Fragment() {
         super.onActivityCreated(savedInstanceState)
         // 当Fragment关联的Activity创建时，加载Fragment里的控件
 
+        // 当Sharedpreferences保存了地点，则直接跳转该地点的天气详情
+        if ( viewModel.isPlaceSaved() ) {
+            val place = viewModel.getSavePlace()
+            val intent = Intent(activity, WeatherActivity::class.java).apply {
+                putExtra("place_name", place.name)
+                putExtra("location_lng", place.location.lng)
+                putExtra("location_lat", place.location.lat)
+            }
+            startActivity(intent)
+            activity?.finish()
+            return
+
+        }
+
         // 设置recycleView的layoutManager和adapter
         // activity: getActivity()获取Fragment关联的Activity
         val layoutManager = LinearLayoutManager(activity)
         layoutManager.orientation=LinearLayoutManager.VERTICAL
         binding.recycleView.layoutManager = layoutManager
         // 设置adapter
-        placeAdapter = PlaceAdapter(viewModel.placeList)
+        placeAdapter = PlaceAdapter(this, viewModel.placeList)
         binding.recycleView.adapter = placeAdapter
 
         // searchEdit 监听text变化
