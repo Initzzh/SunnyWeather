@@ -16,7 +16,21 @@
         android:fitsSystemWindows="true"
         >
 
+        <!-- app:backgroundTint="@null" 强制移除按钮应用主题颜色的效果-->
+        <Button
+            android:id="@+id/navBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="15dp"
+            android:background="@drawable/ic_home"
+            app:backgroundTint="@null"
+            />
+
         <!--android: singleLine=“true”  文本内容强制在一行内，不换行-->
+
         <TextView
             android:id="@+id/placeName"
             android:layout_width="wrap_content"
@@ -40,7 +54,7 @@
         android:id="@+id/bodyLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/titleLayout"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">

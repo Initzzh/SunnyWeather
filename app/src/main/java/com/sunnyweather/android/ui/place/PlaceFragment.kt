@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.sunnyweather.android.MainActivity
 import com.sunnyweather.android.WeatherActivity
 import com.sunnyweather.android.databinding.FragmentPlaceBinding
 
@@ -48,7 +49,9 @@ class PlaceFragment: Fragment() {
         // 当Fragment关联的Activity创建时，加载Fragment里的控件
 
         // 当Sharedpreferences保存了地点，则直接跳转该地点的天气详情
-        if ( viewModel.isPlaceSaved() ) {
+        // 跳转到WeatherActivity， fragment已经嵌入到Weather中了，如果fragment关联到WeatherActivity
+        // 且要跳转到WeatherActivity，则会出现无限循环跳转；因此，判断fragment的Activity为MainActvity且保存数据才跳转到Weather;
+        if (activity is MainActivity && viewModel.isPlaceSaved() ) {
             val place = viewModel.getSavePlace()
             val intent = Intent(activity, WeatherActivity::class.java).apply {
                 putExtra("place_name", place.name)

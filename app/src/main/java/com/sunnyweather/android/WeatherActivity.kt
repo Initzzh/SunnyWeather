@@ -1,13 +1,17 @@
 package com.sunnyweather.android
 
+import android.content.Context
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.sunnyweather.android.databinding.ActivityWeatherBinding
@@ -21,7 +25,7 @@ class WeatherActivity : AppCompatActivity() {
 
     val viewModel by lazy { ViewModelProvider(this).get(WeatherViewModel::class.java) }
 
-    private lateinit var binding: ActivityWeatherBinding
+    lateinit var binding: ActivityWeatherBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,6 +40,36 @@ class WeatherActivity : AppCompatActivity() {
         // layout布局
         binding = ActivityWeatherBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // 滑动菜单监听事件
+        binding.includeNow.navBtn.setOnClickListener {
+            // 根据系统方向滑动出现
+            binding.drawerLayout.openDrawer(GravityCompat.START)
+
+            // 添加drawLayout监听事件
+            binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener{
+                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+
+                }
+
+                override fun onDrawerOpened(drawerView: View) {
+
+                }
+                // drawLayout 点击关闭事件，关闭输入法键盘
+                override fun onDrawerClosed(drawerView: View) {
+                   val manager = getSystemService(Context.INPUT_METHOD_SERVICE)
+                    as InputMethodManager
+                    // 隐藏输入法
+                    manager.hideSoftInputFromWindow(drawerView.windowToken,
+                        InputMethodManager.HIDE_NOT_ALWAYS)
+                }
+
+                override fun onDrawerStateChanged(newState: Int) {
+                }
+
+            })
+
+        }
+
 
         // 获取lng, lat
         if (viewModel.locationLng.isEmpty()) {
@@ -49,8 +83,6 @@ class WeatherActivity : AppCompatActivity() {
         if (viewModel.placeName.isEmpty()) {
             viewModel.placeName = intent.getStringExtra("place_name") ?: ""
         }
-        // 根据lng, lat 刷新天气数据，执行网络请求
-        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
 
         // 将获取的天气数据更新到UI上
         viewModel.weatherLiveData.observe(this, Observer { result ->
@@ -58,14 +90,30 @@ class WeatherActivity : AppCompatActivity() {
             if (weather != null) {
                 // 将数据展示到UI上
                 showWeatherInfo(weather)
+                Toast.makeText(this,"天气数据加载完毕", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this,"无法成功获取天气信息", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
+            // 当刷新结束后，隐藏刷新条
+            binding.swipeRefresh.isRefreshing = false
         })
 
-    }
+        // 设置刷新条颜色
+        binding.swipeRefresh.setColorSchemeResources(R.color.colorPrimary)
+        // 根据lng, lat 刷新天气数据，执行网络请求
+        refreshWeather()
+        // 监听下拉刷新
+        binding.swipeRefresh.setOnRefreshListener {
+            refreshWeather()
+        }
 
+    }
+    fun refreshWeather(){
+        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+        // 显示刷新条
+        binding.swipeRefresh.isRefreshing = true
+    }
     private fun showWeatherInfo(weather: Weather) {
         binding.includeNow.placeName.text = viewModel.placeName
         val realtime = weather.realtime
